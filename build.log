@@ -1,0 +1,12 @@
+  ▲ Next.js 14.2.35
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/components/NetworkPreview.tsx
+Module not found: Can't resolve 'reactflow'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

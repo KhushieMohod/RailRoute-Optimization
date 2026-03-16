@@ -1,0 +1,54 @@
+  ▲ Next.js 14.2.35
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./node_modules/@xyflow/system/dist/esm/index.js
+Module not found: Can't resolve 'd3-drag'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/@xyflow/react/dist/esm/index.js
+./src/components/NetworkPreview.tsx
+
+./node_modules/@xyflow/system/dist/esm/index.js
+Module not found: Can't resolve 'd3-zoom'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/@xyflow/react/dist/esm/index.js
+./src/components/NetworkPreview.tsx
+
+./node_modules/@xyflow/system/dist/esm/index.js
+Module not found: Can't resolve 'd3-interpolate'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/@xyflow/react/dist/esm/index.js
+./src/components/NetworkPreview.tsx
+
+./node_modules/d3-selection/src/index.js
+Module not found: Can't resolve './create.js'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/@xyflow/system/dist/esm/index.js
+./node_modules/@xyflow/react/dist/esm/index.js
+./src/components/NetworkPreview.tsx
+
+./node_modules/d3-selection/src/index.js
+Module not found: Can't resolve './creator.js'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/@xyflow/system/dist/esm/index.js
+./node_modules/@xyflow/react/dist/esm/index.js
+./src/components/NetworkPreview.tsx
+
+
+> Build failed because of webpack errors
