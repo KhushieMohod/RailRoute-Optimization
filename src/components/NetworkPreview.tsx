@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState
 } from '@xyflow/react';
+// @ts-expect-error - production bypass for css import
 import '@xyflow/react/dist/style.css';
 import { Route, GitMerge, Search } from 'lucide-react';
 
@@ -138,7 +139,6 @@ const defaultEdgeStyle = {
 
 // --- Algorithms ---
 
-// Disjoint Set for Kruskal's
 class DisjointSet {
   parent: Record<string, string> = {};
   constructor(nodes: string[]) {
@@ -155,7 +155,7 @@ class DisjointSet {
   }
 }
 
-// Compute Minimum Spanning Tree
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getMSTEdgeIds() {
   const edges = [...TRACKS].sort((a, b) => a.weight - b.weight);
   const ds = new DisjointSet(STATIONS.map(s => s.id));
@@ -170,7 +170,6 @@ function getMSTEdgeIds() {
   return mstEdges;
 }
 
-// Compute Shortest Path (Dijkstra)
 function getShortestPath(startId: string, endId: string) {
   const distances: Record<string, number> = {};
   const prev: Record<string, { node: string, edge: string } | null> = {};
@@ -301,20 +300,19 @@ export default function NetworkPreview() {
   const [endNode, setEndNode] = useState<string>('');
   const [viewMode, setViewMode] = useState<'graph' | 'avl'>('graph');
 
-  const graphDegrees = getNodeDegrees();
-
   // Initialize graph
   useEffect(() => {
+    const degrees = getNodeDegrees();
     const initNodes: FlowNode[] = STATIONS.map(s => ({
       id: s.id,
       position: { x: s.x, y: s.y },
       data: {
         label: (
-          <div title={`In-Degree: ${graphDegrees.indegree[s.id]} • Out-Degree: ${graphDegrees.outdegree[s.id]}`}>
+          <div title={`In: ${degrees.indegree[s.id]} • Out: ${degrees.outdegree[s.id]}`}>
             {s.name}
           </div>
         ),
-        tooltip: `In-Degree: ${graphDegrees.indegree[s.id]} / Out-Degree: ${graphDegrees.outdegree[s.id]}`
+        tooltip: `In: ${degrees.indegree[s.id]} / Out: ${degrees.outdegree[s.id]}`
       },
       style: defaultNodeStyle
     }));
@@ -332,7 +330,8 @@ export default function NetworkPreview() {
 
     setNodes(initNodes);
     setEdges(initEdges);
-  }, [setNodes, setEdges]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle Updates
   useEffect(() => {
@@ -364,7 +363,6 @@ export default function NetworkPreview() {
           opacity: 1
         }
       })));
-
       return;
     }
 
@@ -377,9 +375,10 @@ export default function NetworkPreview() {
       pathNodes = result.nodes;
     }
 
+    const degrees = getNodeDegrees();
     setNodes((nds: FlowNode[]) => nds.map((n: FlowNode) => {
       const inPath = pathNodes.includes(n.id);
-      const tooltip = `In-Degree: ${graphDegrees.indegree[n.id]} / Out-Degree: ${graphDegrees.outdegree[n.id]}`;
+      const tooltip = `In: ${degrees.indegree[n.id]} / Out: ${degrees.outdegree[n.id]}`;
 
       return {
         ...n,
@@ -417,23 +416,22 @@ export default function NetworkPreview() {
         }
       };
     }));
-  }, [startNode, endNode, viewMode, setNodes, setEdges]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startNode, endNode, viewMode]);
 
   return (
     <section id="network" className="py-24 relative">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-alabaster mb-4 flex items-center gap-3">
-            <Route className="w-8 h-8 text-cyan" />
+          <h2 className="text-3xl font-bold text-white mb-4 flex items-center gap-3">
+            <Route className="w-8 h-8 text-[#64ffda]" />
             Live Network Preview
           </h2>
-          <p className="text-cyan/80 text-lg">Interactive React Flow topological viewer featuring dynamic pathfinding and AVL tree visualization.</p>
+          <p className="text-[#64ffda]/80 text-lg">Interactive React Flow topological viewer featuring dynamic pathfinding and AVL tree visualization.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 bg-slate/20 p-6 rounded-2xl border border-cyan/10 backdrop-blur-sm">
-          
-          {/* Main React Flow Canvas */}
-          <div className="flex-1 h-[600px] bg-navy/50 rounded-xl border border-slate relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-8 bg-[#112240]/20 p-6 rounded-2xl border border-[#64ffda]/10 backdrop-blur-sm">
+          <div className="flex-1 h-[600px] bg-[#0a192f]/50 rounded-xl border border-[#233554] relative overflow-hidden">
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -443,31 +441,24 @@ export default function NetworkPreview() {
               attributionPosition="bottom-left"
             >
               <Background color="#112240" gap={16} size={1} />
-              <Controls className="bg-navy border-cyan fill-cyan" />
+              <Controls />
             </ReactFlow>
           </div>
 
-          {/* Pathfinding Simulator Sidebar */}
           <div className="w-full lg:w-80 flex flex-col gap-6">
-            <div className="bg-navy/80 p-6 rounded-xl border border-cyan/20">
-              <h3 className="font-bold text-lg mb-6 flex items-center gap-2 border-b border-cyan/20 pb-3">
-                <Search className="w-5 h-5 text-cyan" />
+            <div className="bg-[#0a192f]/80 p-6 rounded-xl border border-[#64ffda]/20">
+              <h3 className="font-bold text-lg mb-6 flex items-center gap-2 border-b border-[#64ffda]/20 pb-3">
+                <Search className="w-5 h-5 text-[#64ffda]" />
                 View Mode
               </h3>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate/50 p-4 border border-cyan/20">
-                  <div>
-                    <div className="text-xs uppercase tracking-wider text-alabaster/60">View Mode</div>
-                    <div className="text-sm font-bold text-alabaster">Network Graph / AVL Tree</div>
-                  </div>
-                  <div className="inline-flex rounded-full bg-navy border border-cyan/20 p-1">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#112240]/50 p-4 border border-[#64ffda]/20">
+                  <div className="inline-flex rounded-full bg-[#0a192f] border border-[#64ffda]/20 p-1">
                     <button
-                      onClick={() => {
-                        setViewMode('graph');
-                      }}
+                      onClick={() => setViewMode('graph')}
                       className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                        viewMode === 'graph' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
+                        viewMode === 'graph' ? 'bg-[#64ffda] text-[#0a192f]' : 'text-white/70 hover:text-white'
                       }`}
                     >
                       Graph
@@ -479,18 +470,18 @@ export default function NetworkPreview() {
                         setEndNode('');
                       }}
                       className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                        viewMode === 'avl' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
+                        viewMode === 'avl' ? 'bg-[#64ffda] text-[#0a192f]' : 'text-white/70 hover:text-white'
                       }`}
                     >
-                      AVL Tree
+                      AVL
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-alabaster/60 mb-2 uppercase font-bold tracking-wider">Start Node</label>
+                  <label className="block text-xs text-white/60 mb-2 uppercase font-bold tracking-wider">Start Node</label>
                   <select 
-                    className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
+                    className="w-full bg-[#112240] border border-[#64ffda]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#64ffda] transition-colors"
                     value={startNode}
                     onChange={(e) => setStartNode(e.target.value)}
                     disabled={viewMode === 'avl'}
@@ -501,9 +492,9 @@ export default function NetworkPreview() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-alabaster/60 mb-2 uppercase font-bold tracking-wider">End Node</label>
+                  <label className="block text-xs text-white/60 mb-2 uppercase font-bold tracking-wider">End Node</label>
                   <select 
-                    className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
+                    className="w-full bg-[#112240] border border-[#64ffda]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#64ffda] transition-colors"
                     value={endNode}
                     onChange={(e) => setEndNode(e.target.value)}
                     disabled={viewMode === 'avl'}
@@ -513,29 +504,21 @@ export default function NetworkPreview() {
                   </select>
                 </div>
               </div>
-
-              {startNode && endNode && startNode !== endNode && viewMode === 'graph' && (
-                <div className="mt-6 p-4 bg-cyan/10 border border-cyan/30 rounded-lg">
-                  <div className="text-xs font-mono text-cyan mb-1">Status:</div>
-                  <div className="text-sm">Optimal path resolved using Dijkstra&apos;s algorithm.</div>
-                </div>
-              )}
             </div>
 
-            <div className="bg-navy/80 p-6 rounded-xl border border-amber-500/20">
+            <div className="bg-[#0a192f]/80 p-6 rounded-xl border border-amber-500/20">
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2 border-b border-amber-500/20 pb-3 text-amber-500">
                 <GitMerge className="w-5 h-5" />
-                {viewMode === 'graph' ? 'Full Network Graph' : 'AVL Tree View'}
+                Logic Engine
               </h3>
-              <p className="text-sm text-alabaster/70 mb-6">
+              <p className="text-sm text-white/70">
                 {viewMode === 'graph'
-                  ? 'Display all routes with cycle detection emphasized in the directed track layout.'
-                  : 'Visualize the AVL balancing structure for rapid $O(\log n)$ station timetable lookup.'
+                  ? 'Spatial Engine: Resolving optimal rail topology using Dijkstra’s Shortest Path.'
+                  : 'Logical Engine: Visualizing balanced O(log n) station schedule lookup.'
                 }
               </p>
             </div>
           </div>
-
         </div>
       </div>
     </section>
