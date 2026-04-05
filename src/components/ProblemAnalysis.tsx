@@ -5,7 +5,7 @@ import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function ProblemAnalysis() {
   return (
-    <section id="problem" className="py-24 relative">
+    <section id="analysis" className="py-24 relative">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

@@ -1,120 +1,107 @@
-#include <iostream>
-#include <string>
-#include <algorithm>
-
+#include<iostream>
+#include<string>
 using namespace std;
 
-// Node structure for the Train Database
-struct Node {
-    int trainId;
+struct Node{
+    int trainID;
     string destination;
-    Node *left, *right;
+    string arrivalTime;
+    Node* left;
+    Node* right;
     int height;
 
-    Node(int id, string dest) {
-        trainId = id;
+    Node(int id, string dest, string time)
+    {
+        trainID = id;
         destination = dest;
+        arrivalTime = time;
+        left = right = nullptr;
         left = right = nullptr;
         height = 1;
     }
 };
 
-// Utility to get height of a node
-int height(Node* n) {
-    return n ? n->height : 0;
+Node* insert(Node* root, int id, string dest, string time)
+{
+    if(!root) return new Node(id, dest, time);
+
+    if(id < root -> trainID) root -> left = insert(root -> left, id, dest, time);
+    else if(id > root -> trainID) root -> right = insert(root -> right, id, dest, time);
+    else return root;
+
+    
 }
 
-// Get Balance Factor
-int getBalance(Node* n) {
-    return n ? height(n->left) - height(n->right) : 0;
+int height(Node* root)
+{
+    if(!root) return 0;
+    return root -> height;
 }
 
-// Right Rotation (LL Case)
-Node* rightRotate(Node* y) {
-    Node* x = y->left;
-    Node* T2 = x->right;
-
-    x->right = y;
-    y->left = T2;
-
-    y->height = max(height(y->left), height(y->right)) + 1;
-    x->height = max(height(x->left), height(x->right)) + 1;
-
-    return x;
+int balanceFactor(Node* root)
+{
+    if(!root) return 0;
+    return height(root -> left) - height(root -> right);
 }
 
-// Left Rotation (RR Case)
-Node* leftRotate(Node* x) {
-    Node* y = x->right;
-    Node* T2 = y->left;
-
-    y->left = x;
-    x->right = T2;
-
-    x->height = max(height(x->left), height(x->right)) + 1;
-    y->height = max(height(y->left), height(y->right)) + 1;
-
-    return y;
+Node* rotateRight(Node* parent)
+{
+    Node* temp = parent -> left;
+    if(temp -> right) temp -> right = parent -> left;
+    temp -> right = parent;
+    return temp;
 }
 
-// Recursive function to insert a train into the AVL tree
-Node* insert(Node* node, int id, string dest) {
-    if (!node) return new Node(id, dest);
-
-    if (id < node->trainId)
-        node->left = insert(node->left, id, dest);
-    else if (id > node->trainId)
-        node->right = insert(node->right, id, dest);
-    else
-        return node; // Duplicate IDs not allowed
-
-    node->height = 1 + max(height(node->left), height(node->right));
-
-    int balance = getBalance(node);
-
-    // Left Left Case
-    if (balance > 1 && id < node->left->trainId)
-        return rightRotate(node);
-
-    // Right Right Case
-    if (balance < -1 && id > node->right->trainId)
-        return leftRotate(node);
-
-    // Left Right Case
-    if (balance > 1 && id > node->left->trainId) {
-        node->left = leftRotate(node->left);
-        return rightRotate(node);
-    }
-
-    // Right Left Case
-    if (balance < -1 && id < node->right->trainId) {
-        node->right = rightRotate(node->right);
-        return leftRotate(node);
-    }
-
-    return node;
+Node* rotateLeft(Node* parent)
+{
+    Node* temp = parent -> right;
+    if(temp -> left) parent -> right = temp -> left;
+    temp -> left = parent;
+    return temp; 
 }
 
-// In-order traversal to display the sorted Time-Table
-void display(Node* root) {
-    if (root) {
-        display(root->left);
-        cout << "Train ID: " << root->trainId << " | Destination: " << root->destination << endl;
-        display(root->right);
-    }
+Node* leftLeft(Node* parent)
+{
+    Node* temp = rotateRight(parent);
+    return temp;
 }
 
-int main() {
+Node* rightRight(Node* parent)
+{
+    Node* temp = rotateLeft(parent);
+    return temp;
+}
+
+Node* leftRight(Node* parent)
+{   
+    //Resolving the left right case to left left case
+    Node* temp = rotateLeft(parent -> left);
+    parent -> left = temp;
+    //Resolving the left left case
+    temp = rotateRight(parent);
+    return temp;
+}
+
+Node* rightLeft(Node* parent)
+{   
+    //Resolving the right left case to right right case
+    Node* temp = rotateRight(parent ->right);
+    parent -> right = temp;
+    //Resolving the right right case
+    temp = rotateLeft(parent);
+    return temp;
+}
+
+int main()
+{
     Node* root = nullptr;
-
-    // Simulating the RailRoute Database
-    root = insert(root, 101, "Mumbai Central");
-    root = insert(root, 105, "Pune Junction");
-    root = insert(root, 103, "Lonavala Station");
-    root = insert(root, 102, "Thane Terminal");
-
-    cout << "--- RailRoute Automated Time-Table (AVL Balanced) ---" << endl;
-    display(root);
-
+    root = insert(root, 30, "CSMT", "5.00 PM");
+    root = insert(root, 40, "Karjat", "10.30 pM");
+    root = insert(root, 50, "Lonavala", "9.00 AM");
+    root = insert(root, 45, "Daund", "10.00 AM");
+    root = insert(root, 85, "Dadar", "7.45 AM");
+    root = insert(root, 90, "Kalyan", "1.15 PM");
+    root = insert(root, 70, "Nashik", "8.00 PM");
+    root = insert(root, 65, "Sinnar", "12.30 PM");
     return 0;
 }

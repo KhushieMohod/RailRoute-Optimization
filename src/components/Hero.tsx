@@ -6,7 +6,7 @@ import { Train } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative w-full min-h-[90vh] flex items-center pt-16">
+    <section id="hero" className="relative w-full min-h-[90vh] flex items-center pt-16">
       <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
         <motion.div 
           initial={{ opacity: 0, x: -50 }}
