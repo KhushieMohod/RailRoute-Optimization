@@ -13,6 +13,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges
 } from '@xyflow/react';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import '@xyflow/react/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -82,6 +83,7 @@ function getShortestPath(startId: string, endId: string, disabledEdges: Set<stri
   if (curr && (prev[curr] !== null || curr === startId)) {
     while (curr !== null) {
       pNodes.unshift(curr);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const step = prev[curr];
       if (step) {
@@ -168,11 +170,11 @@ export default function DualEngineDashboard() {
   const [treeInput, setTreeInput] = useState('');
   const [searchHighlight, setSearchHighlight] = useState<number | null>(null);
 
-  // @ts-ignore
-const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
 
-// @ts-ignore
-const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
 
   const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
     setDisabledEdges((prev) => {
