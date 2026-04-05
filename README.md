@@ -64,9 +64,13 @@ Construct MST using from[]
 Enter number of stations: 4
 
 Enter cost matrix:
+
 0 10 15 20
+
 10 0 35 25
+
 15 35 0 30
+
 20 25 30 0
 
 ---
@@ -74,26 +78,11 @@ Enter cost matrix:
 ## ✅ Sample Output
 
 Edge Cost
+
 0 - 1 10
+
 0 - 2 15
+
 1 - 3 25
 
 Total Minimum Cost = 50
-
-
----
-
-## 🔄 Flowchart
-```mermaid
-flowchart TD
-    A[Start] --> B[Input number of stations]
-    B --> C[Input cost matrix]
-    C --> D[Initialize visited, distance, from arrays]
-    D --> E[Set distance[0] = 0]
-    E --> F[Find minimum distance unvisited node]
-    F --> G[Mark node as visited]
-    G --> H[Update adjacent nodes]
-    H --> I{All nodes visited?}
-    I -- No --> F
-    I -- Yes --> J[Display MST and total cost]
-    J --> K[End]
