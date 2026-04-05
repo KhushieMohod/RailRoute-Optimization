@@ -8,8 +8,6 @@ import {
   useNodesState,
   useEdgesState
 } from '@xyflow/react';
-// @ts-expect-error - Bypassing production build CSS error
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import '@xyflow/react/dist/style.css';
 import { Route, GitMerge, Search } from 'lucide-react';
 
