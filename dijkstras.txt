@@ -1,0 +1,13 @@
+1. Start
+2. Input graph
+3. Initialize:
+  distance[] = INF
+  visited[] = 0
+4. Set source vertex → distance[source] = 0
+5. Repeat nV times:
+  Select unvisited vertex with minimum distance
+  Mark it visited
+  For all adjacent vertices:
+    If new distance < old distance → update
+6. Print shortest distances
+7. Stop
