@@ -27,9 +27,13 @@ This project simulates how railway stations can be connected with minimum total 
 
 ## 📂 Project Structure
 RailRouteOptimization/
+
 │
+
 ├── main.cpp # Prim's Algorithm Implementation
+
 ├── README.md # Documentation
+
 └── flowchart.mmd # Mermaid Flowchart
 
 ---
