@@ -1,0 +1,17 @@
+1. Start
+2. Input number of vertices and edges
+3. Initialize:
+  visited[] = 0
+  distance[] = INF
+  from[] = -1
+4. Choose starting vertex v
+5. Mark visited[v] = 1
+6. Repeat nV - 1 times:
+  For all unvisited vertices:
+    Update distance[i] = min(distance[i], cost[v][i])
+    Update from[i] accordingly
+    Select vertex with minimum distance
+7. Mark it visited
+8. Add edge to MST
+9. Print total cost
+10. Stop
