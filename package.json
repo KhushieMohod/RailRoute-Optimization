@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@xyflow/react": "^12.10.1",
+    "@xyflow/react": "^12.10.2",
     "clsx": "^2.1.1",
     "d3-color": "^3.1.0",
     "d3-drag": "^3.0.0",
