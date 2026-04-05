@@ -17,7 +17,7 @@ import {
 // @ts-ignore
 import '@xyflow/react/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Database, Plus, RotateCcw, GitPullRequest, Search, Trash2, Activity } from 'lucide-react';
+import { Network, Database, Plus, RotateCcw, GitPullRequest, Search, Trash2, Activity, Train } from 'lucide-react';
 import Hero from '@/components/Hero';
 import ProblemAnalysis from '@/components/ProblemAnalysis';
 import Objectives from '@/components/Objectives';
@@ -183,6 +183,7 @@ export default function DualEngineDashboard() {
   const [root, setRoot] = useState<AVLNode | null>(null);
   const [treeInput, setTreeInput] = useState('');
   const [searchHighlight, setSearchHighlight] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
@@ -196,6 +197,11 @@ export default function DualEngineDashboard() {
       else next.add(edge.id);
       return next;
     });
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -258,67 +264,85 @@ export default function DualEngineDashboard() {
 
   return (
     <>
-      <Hero />
-      <ProblemAnalysis />
-      <section id="implementation" className="py-24 bg-[#0a192f] text-[#64ffda]">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">Dual-Engine Dashboard</h2>
-            <div className="flex justify-center gap-4">
-              <button onClick={() => setActiveTab('graph')} className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'graph' ? 'bg-[#64ffda] text-[#0a192f]' : 'border border-[#64ffda]'}`}><Network size={18} /> Topology</button>
-              <button onClick={() => setActiveTab('tree')} className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'tree' ? 'bg-[#64ffda] text-[#0a192f]' : 'border border-[#64ffda]'}`}><Database size={18} /> Time-Table</button>
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#0a192f] flex items-center justify-center z-50"
+          >
+            <div className="text-center">
+              <Train size={64} className="text-[#64ffda] mx-auto mb-4 animate-pulse" />
+              <p className="text-[#64ffda] text-xl">Initializing Routes...</p>
             </div>
-          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {!loading && (
+        <>
+          <Hero />
+          <ProblemAnalysis />
+          <section id="implementation" className="py-24 bg-[#0a192f] text-[#64ffda]">
+            <div className="container mx-auto px-4 max-w-7xl">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-white mb-4">Dual-Engine Dashboard</h2>
+                <div className="flex justify-center gap-4">
+                  <button onClick={() => setActiveTab('graph')} className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'graph' ? 'bg-[#64ffda] text-[#0a192f]' : 'border border-[#64ffda]'}`}><Network size={18} /> Topology</button>
+                  <button onClick={() => setActiveTab('tree')} className={`flex items-center gap-2 px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'tree' ? 'bg-[#64ffda] text-[#0a192f]' : 'border border-[#64ffda]'}`}><Database size={18} /> Time-Table</button>
+                </div>
+              </div>
 
-          <div className="bg-[#112240] rounded-3xl p-8 border border-[#64ffda]/20 min-h-[600px] shadow-2xl relative">
-            <AnimatePresence mode="wait">
-              {activeTab === 'graph' ? (
-                <motion.div key="g" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[600px] relative">
-                  <Panel position="top-right" className="bg-[#0a192f] p-4 rounded-xl border border-[#64ffda] space-y-3 z-50">
-                    <div className="flex items-center gap-2 text-[#64ffda] bg-[#112240] px-2 py-1 rounded"><Search size={14} /> <input placeholder="Search station..." className="bg-transparent outline-none text-xs w-full" onChange={e => setStationSearch(e.target.value)} /></div>
-                    <select className="w-full bg-[#112240] text-white text-xs p-2 border border-[#64ffda]" onChange={e => setStartNode(e.target.value)} value={startNode}><option value="">From...</option>{STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-                    <select className="w-full bg-[#112240] text-white text-xs p-2 border border-[#64ffda]" onChange={e => setEndNode(e.target.value)} value={endNode}><option value="">To...</option>{STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-                    <button onClick={() => { setDisabledEdges(new Set()); setStartNode(''); setEndNode(''); setStationSearch(''); }} className="w-full text-[10px] text-[#64ffda] border border-[#64ffda] py-1 rounded flex items-center justify-center gap-1"><RotateCcw size={10} /> Reset All</button>
-                  </Panel>
-                  <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onEdgeClick={onEdgeClick} fitView><Background color="#233554" /><Controls /></ReactFlow>
-                </motion.div>
-              ) : (
-                <motion.div key="t" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[600px] flex flex-col">
-                  <div className="flex justify-between items-start mb-8">
-                    <div><h3 className="text-xl font-bold text-white flex items-center gap-2"><GitPullRequest className="text-[#64ffda]" /> Time-Table Management</h3><p className="text-xs text-[#8892b0]">Database orchestration using AVL self-balancing logic.</p></div>
-                    <div className="flex gap-2">
-                      <input placeholder="Train ID..." className="bg-[#0a192f] border border-[#64ffda] rounded-lg px-3 py-1 text-white text-sm w-24 outline-none" value={treeInput} onChange={e => setTreeInput(e.target.value)} />
-                      <button 
-                        onClick={() => { 
-                          const id = parseInt(treeInput); 
-                          if (!isNaN(id)) { 
-                            const data = mockData[Math.floor(Math.random() * mockData.length)];
-                            setRoot(prev => insert(prev, id, data.dest, data.time)); 
-                            setTreeInput(''); 
-                          } 
-                        }} 
-                        className="bg-[#64ffda] text-[#0a192f] px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"
-                      >
-                        <Plus size={14} /> Add Train
-                      </button>
-                      <button onClick={() => { const id = parseInt(treeInput); if (!isNaN(id)) { setRoot(prev => deleteNode(prev, id)); setTreeInput(''); } }} className="bg-red-500 text-white px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Trash2 size={14} /> Remove</button>
-                    </div>
-                  </div>
-                  <div className="flex-1 bg-[#0a192f]/50 rounded-2xl relative overflow-hidden border border-[#64ffda]/5">
-                    <div className="absolute top-4 left-4 flex gap-4"><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">HEIGHT</span><span className="text-lg font-bold text-white">{stats.h}</span></div><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">NODES</span><span className="text-lg font-bold text-white">{stats.c}</span></div></div>
-                    <svg width="100%" height="100%" viewBox="0 0 800 500" className="mx-auto mt-10" onClick={() => setSearchHighlight(null)}>{renderAVL(root, 400, 60, 180)}</svg>
-                    <Panel position="bottom-right" className="bg-[#0a192f]/90 p-3 rounded-lg border border-[#64ffda]/20 max-w-xs"><div className="flex items-center gap-1 text-[#64ffda] text-[10px] font-mono mb-1"><Activity size={12} /> Database Analysis</div><p className="text-[9px] text-[#8892b0]">Each node stores a Train ID as the primary key and its schedule as the record value.</p></Panel>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="mt-8 flex justify-center gap-8 text-[10px] font-mono text-[#64ffda]/40 uppercase tracking-widest"><div className="flex items-center gap-1"><span className="w-2 h-2 border border-[#64ffda]" /> Database Records</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-[#64ffda]" /> Key Search</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500" /> Balance Factor</div></div>
-        </div>
-      </section>
-      <Objectives />
-      <Constraints />
-      <Footer />
+              <div className="bg-[#112240] rounded-3xl p-8 border border-[#64ffda]/20 min-h-[600px] shadow-2xl relative">
+                <AnimatePresence mode="wait">
+                  {activeTab === 'graph' ? (
+                    <motion.div key="g" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[600px] relative">
+                      <Panel position="top-right" className="bg-[#0a192f] p-4 rounded-xl border border-[#64ffda] space-y-3 z-50">
+                        <div className="flex items-center gap-2 text-[#64ffda] bg-[#112240] px-2 py-1 rounded"><Search size={14} /> <input placeholder="Search station..." className="bg-transparent outline-none text-xs w-full" onChange={e => setStationSearch(e.target.value)} /></div>
+                        <select className="w-full bg-[#112240] text-white text-xs p-2 border border-[#64ffda]" onChange={e => setStartNode(e.target.value)} value={startNode}><option value="">From...</option>{STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+                        <select className="w-full bg-[#112240] text-white text-xs p-2 border border-[#64ffda]" onChange={e => setEndNode(e.target.value)} value={endNode}><option value="">To...</option>{STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+                        <button onClick={() => { setDisabledEdges(new Set()); setStartNode(''); setEndNode(''); setStationSearch(''); }} className="w-full text-[10px] text-[#64ffda] border border-[#64ffda] py-1 rounded flex items-center justify-center gap-1"><RotateCcw size={10} /> Reset All</button>
+                      </Panel>
+                      <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onEdgeClick={onEdgeClick} fitView><Background color="#233554" /><Controls /></ReactFlow>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="t" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[600px] flex flex-col">
+                      <div className="flex justify-between items-start mb-8">
+                        <div><h3 className="text-xl font-bold text-white flex items-center gap-2"><GitPullRequest className="text-[#64ffda]" /> Time-Table Management</h3><p className="text-xs text-[#8892b0]">Database orchestration using AVL self-balancing logic.</p></div>
+                        <div className="flex gap-2">
+                          <input placeholder="Train ID..." className="bg-[#0a192f] border border-[#64ffda] rounded-lg px-3 py-1 text-white text-sm w-24 outline-none" value={treeInput} onChange={e => setTreeInput(e.target.value)} />
+                          <button 
+                            onClick={() => { 
+                              const id = parseInt(treeInput); 
+                              if (!isNaN(id)) { 
+                                const data = mockData[Math.floor(Math.random() * mockData.length)];
+                                setRoot(prev => insert(prev, id, data.dest, data.time)); 
+                                setTreeInput(''); 
+                              } 
+                            }} 
+                            className="bg-[#64ffda] text-[#0a192f] px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"
+                          >
+                            <Plus size={14} /> Add Train
+                          </button>
+                          <button onClick={() => { const id = parseInt(treeInput); if (!isNaN(id)) { setRoot(prev => deleteNode(prev, id)); setTreeInput(''); } }} className="bg-red-500 text-white px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Trash2 size={14} /> Remove</button>
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-[#0a192f]/50 rounded-2xl relative overflow-hidden border border-[#64ffda]/5">
+                        <div className="absolute top-4 left-4 flex gap-4"><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">HEIGHT</span><span className="text-lg font-bold text-white">{stats.h}</span></div><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">NODES</span><span className="text-lg font-bold text-white">{stats.c}</span></div></div>
+                        <svg width="100%" height="100%" viewBox="0 0 800 500" className="mx-auto mt-10" onClick={() => setSearchHighlight(null)}>{renderAVL(root, 400, 60, 180)}</svg>
+                        <Panel position="bottom-right" className="bg-[#0a192f]/90 p-3 rounded-lg border border-[#64ffda]/20 max-w-xs"><div className="flex items-center gap-1 text-[#64ffda] text-[10px] font-mono mb-1"><Activity size={12} /> Database Analysis</div><p className="text-[9px] text-[#8892b0]">Each node stores a Train ID as the primary key and its schedule as the record value.</p></Panel>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="mt-8 flex justify-center gap-8 text-[10px] font-mono text-[#64ffda]/40 uppercase tracking-widest"><div className="flex items-center gap-1"><span className="w-2 h-2 border border-[#64ffda]" /> Database Records</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-[#64ffda]" /> Key Search</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500" /> Balance Factor</div></div>
+            </div>
+          </section>
+          <Objectives />
+          <Constraints />
+          <Footer />
+        </>
+      )}
     </>
   );
 }
