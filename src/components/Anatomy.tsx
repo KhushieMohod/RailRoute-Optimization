@@ -38,7 +38,7 @@ export default function Anatomy() {
   ];
 
   return (
-    <section id="anatomy" className="py-24 relative">
+    <section id="technical-implementation" className="py-24 relative">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -46,10 +46,10 @@ export default function Anatomy() {
           viewport={{ once: true }}
           className="mb-16 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-alabaster mb-4">The Anatomy of RailRoute</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-alabaster mb-4">Technical Implementation</h2>
           <div className="w-24 h-1 bg-cyan mx-auto rounded-full" />
           <p className="text-alabaster/70 mt-6 max-w-2xl mx-auto">
-            Deconstructing the topological foundations using formal graph theory constructs.
+            A formal execution summary of the system architecture, topological models, and implementation patterns.
           </p>
         </motion.div>
 

@@ -166,6 +166,40 @@ export default function Requirements() {
                   </div>
                 </div>
 
+                {/* Functional Modules */}
+                <div className="bg-slate/30 border border-cyan/20 rounded-2xl p-8 backdrop-blur-sm">
+                  <h3 className="text-xl font-bold text-alabaster border-b border-cyan/20 pb-4 mb-8 flex items-center gap-3">
+                    <DatabaseZap className="w-6 h-6 text-cyan" />
+                    Functional Modules
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-navy/80 border border-cyan/10 rounded-3xl p-6">
+                      <h4 className="text-lg font-semibold text-alabaster mb-3">Module 1: Graph Construction Engine</h4>
+                      <p className="text-sm text-alabaster/70 leading-relaxed">
+                        Handles the conversion of raw station data into a topological map, generating vertices, directed weighted edges, and an adjacency list representation for memory-efficient route modeling.
+                      </p>
+                    </div>
+                    <div className="bg-navy/80 border border-cyan/10 rounded-3xl p-6">
+                      <h4 className="text-lg font-semibold text-alabaster mb-3">Module 2: Pathfinding Analytics</h4>
+                      <p className="text-sm text-alabaster/70 leading-relaxed">
+                        Executes graph-traversal algorithms to compute shortest paths and route cost aggregation, supporting dynamic distance/time metrics for station-to-station navigation.
+                      </p>
+                    </div>
+                    <div className="bg-navy/80 border border-cyan/10 rounded-3xl p-6">
+                      <h4 className="text-lg font-semibold text-alabaster mb-3">Module 3: Spanning Tree Optimizer</h4>
+                      <p className="text-sm text-alabaster/70 leading-relaxed">
+                        Simplifies complex networks into hierarchical trees for infrastructure planning, deriving the minimum spanning tree to expose the most efficient backbone without redundancy.
+                      </p>
+                    </div>
+                    <div className="bg-navy/80 border border-cyan/10 rounded-3xl p-6">
+                      <h4 className="text-lg font-semibold text-alabaster mb-3">Module 4: Cycle Detection Logic</h4>
+                      <p className="text-sm text-alabaster/70 leading-relaxed">
+                        Uses DFS-based traversal to identify and manage loops in the railway tracks, isolating cyclic edge groups and preventing routing inconsistencies.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Edge Case Matrix */}
                 <div>
                   <h3 className="text-xl font-bold text-alabaster mb-6 border-l-4 border-amber-500 pl-4 py-1">Edge Case Audit Matrix</h3>

@@ -7,10 +7,9 @@ import ProblemAnalysis from '@/components/ProblemAnalysis';
 import Requirements from '@/components/Requirements';
 import NetworkPreview from '@/components/NetworkPreview';
 import Anatomy from '@/components/Anatomy';
+import DualModelArchitecture from '@/components/DualModelArchitecture';
 import Objectives from '@/components/Objectives';
 import Constraints from '@/components/Constraints';
-import Roadmap from '@/components/Roadmap';
-import Rubric from '@/components/Rubric';
 import Loader from '@/components/Loader';
 
 export default function Home() {
@@ -41,10 +40,9 @@ export default function Home() {
           <NetworkPreview />
           <Requirements />
           <Anatomy />
+          <DualModelArchitecture />
           <Objectives />
           <Constraints />
-          <Roadmap />
-          <Rubric />
         </motion.div>
       )}
     </>

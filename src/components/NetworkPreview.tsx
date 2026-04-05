@@ -16,7 +16,7 @@ import { Route, GitMerge, Search } from 'lucide-react';
 interface FlowNode {
   id: string;
   position: { x: number; y: number };
-  data: { label: string };
+  data: { label: React.ReactNode; tooltip: string };
   style?: Record<string, unknown>;
 }
 
@@ -156,6 +156,116 @@ function getShortestPath(startId: string, endId: string) {
   return pathNodes.length > 1 ? { nodes: pathNodes, edges: pathEdges } : { nodes: [], edges: [] };
 }
 
+function getNodeDegrees() {
+  const indegree: Record<string, number> = {};
+  const outdegree: Record<string, number> = {};
+  STATIONS.forEach(s => {
+    indegree[s.id] = 0;
+    outdegree[s.id] = 0;
+  });
+
+  TRACKS.forEach(edge => {
+    outdegree[edge.source] += 1;
+    indegree[edge.target] += 1;
+  });
+
+  return { indegree, outdegree };
+}
+
+function getMSTHierarchy() {
+  const mstEdges = getMSTEdgeIds();
+  const adjacency: Record<string, string[]> = {};
+  STATIONS.forEach(s => adjacency[s.id] = []);
+  mstEdges.forEach(edgeId => {
+    const edge = TRACKS.find(t => t.id === edgeId);
+    if (edge) {
+      adjacency[edge.source].push(edge.target);
+      adjacency[edge.target].push(edge.source);
+    }
+  });
+
+  const parent: Record<string, string | null> = {};
+  const children: Record<string, string[]> = {};
+  STATIONS.forEach(s => {
+    parent[s.id] = null;
+    children[s.id] = [];
+  });
+
+  const root = STATIONS[0].id;
+  const visited: Record<string, boolean> = {};
+  STATIONS.forEach(s => visited[s.id] = false);
+  const queue = [root];
+  visited[root] = true;
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    for (const neighbor of adjacency[node]) {
+      if (!visited[neighbor]) {
+        visited[neighbor] = true;
+        parent[neighbor] = node;
+        children[node].push(neighbor);
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return { parent, children };
+}
+
+function getCycleEdgeIds() {
+  const adj: Record<string, string[]> = {};
+  STATIONS.forEach(s => adj[s.id] = []);
+  TRACKS.forEach(edge => {
+    adj[edge.source].push(edge.target);
+  });
+
+  const indexMap: Record<string, number> = {};
+  const lowLink: Record<string, number> = {};
+  const onStack: Record<string, boolean> = {};
+  const stack: string[] = [];
+  let index = 0;
+  const sccs: string[][] = [];
+
+  function strongconnect(v: string) {
+    indexMap[v] = index;
+    lowLink[v] = index;
+    index += 1;
+    stack.push(v);
+    onStack[v] = true;
+
+    for (const w of adj[v]) {
+      if (indexMap[w] === undefined) {
+        strongconnect(w);
+        lowLink[v] = Math.min(lowLink[v], lowLink[w]);
+      } else if (onStack[w]) {
+        lowLink[v] = Math.min(lowLink[v], indexMap[w]);
+      }
+    }
+
+    if (lowLink[v] === indexMap[v]) {
+      const component: string[] = [];
+      let w: string;
+      do {
+        w = stack.pop()!;
+        onStack[w] = false;
+        component.push(w);
+      } while (w !== v);
+      if (component.length > 1) {
+        sccs.push(component);
+      }
+    }
+  }
+
+  STATIONS.forEach(s => {
+    if (indexMap[s.id] === undefined) {
+      strongconnect(s.id);
+    }
+  });
+
+  const cycleNodes = new Set(sccs.flat());
+  return TRACKS.filter(edge => cycleNodes.has(edge.source) && cycleNodes.has(edge.target)).map(edge => edge.id);
+}
+
 // --- Component ---
 
 export default function NetworkPreview() {
@@ -164,14 +274,24 @@ export default function NetworkPreview() {
   
   const [startNode, setStartNode] = useState<string>('');
   const [endNode, setEndNode] = useState<string>('');
-  const [isMSTMode, setIsMSTMode] = useState(false);
+  const [viewMode, setViewMode] = useState<'graph' | 'tree'>('graph');
+
+  const graphDegrees = getNodeDegrees();
+  const mstHierarchy = getMSTHierarchy();
 
   // Initialize graph
   useEffect(() => {
     const initNodes: FlowNode[] = STATIONS.map(s => ({
       id: s.id,
       position: { x: s.x, y: s.y },
-      data: { label: s.name },
+      data: {
+        label: (
+          <div title={`In-Degree: ${graphDegrees.indegree[s.id]} • Out-Degree: ${graphDegrees.outdegree[s.id]}`}>
+            {s.name}
+          </div>
+        ),
+        tooltip: `In-Degree: ${graphDegrees.indegree[s.id]} / Out-Degree: ${graphDegrees.outdegree[s.id]}`
+      },
       style: defaultNodeStyle
     }));
 
@@ -195,8 +315,11 @@ export default function NetworkPreview() {
     let pathEdges: string[] = [];
     let pathNodes: string[] = [];
     let mstEdges: string[] = [];
+    const cycleEdges = viewMode === 'graph' ? getCycleEdgeIds() : [];
+    const graphMode = viewMode === 'graph';
+    const treeMode = viewMode === 'tree';
 
-    if (isMSTMode) {
+    if (treeMode) {
       mstEdges = getMSTEdgeIds();
     } else if (startNode && endNode && startNode !== endNode) {
       const result = getShortestPath(startNode, endNode);
@@ -206,8 +329,27 @@ export default function NetworkPreview() {
 
     setNodes((nds: FlowNode[]) => nds.map((n: FlowNode) => {
       const inPath = pathNodes.includes(n.id);
+      const tooltip = graphMode
+        ? `In-Degree: ${graphDegrees.indegree[n.id]} / Out-Degree: ${graphDegrees.outdegree[n.id]}`
+        : (() => {
+            const parent = mstHierarchy.parent[n.id];
+            const children = mstHierarchy.children[n.id] || [];
+            const parentLabel = parent ? STATIONS.find(s => s.id === parent)?.name : 'Root';
+            const childNames = children.length > 0 ? children.map(id => STATIONS.find(s => s.id === id)?.name).filter(Boolean).join(', ') : 'None';
+            return `Parent: ${parentLabel} / Children: ${childNames}`;
+          })();
+
       return {
         ...n,
+        data: {
+          ...n.data,
+          label: (
+            <div title={tooltip}>
+              {STATIONS.find(s => s.id === n.id)?.name}
+            </div>
+          ),
+          tooltip
+        },
         style: {
           ...defaultNodeStyle,
           background: inPath ? '#64ffda' : defaultNodeStyle.background,
@@ -220,9 +362,10 @@ export default function NetworkPreview() {
     setEdges((eds: FlowEdge[]) => eds.map((e: FlowEdge) => {
       const inPath = pathEdges.includes(e.id);
       const inMST = mstEdges.includes(e.id);
+      const inCycle = cycleEdges.includes(e.id);
       
       let hidden = false;
-      if (isMSTMode && !inMST) hidden = true;
+      if (treeMode && !inMST) hidden = true;
 
       return {
         ...e,
@@ -230,13 +373,19 @@ export default function NetworkPreview() {
         animated: inPath,
         style: {
           ...defaultEdgeStyle,
-          stroke: inPath ? '#64ffda' : (isMSTMode && inMST ? '#64ffda' : defaultEdgeStyle.stroke),
-          strokeWidth: inPath ? 4 : (isMSTMode && inMST ? 3 : defaultEdgeStyle.strokeWidth),
-          opacity: hidden ? 0 : (inPath || (isMSTMode && inMST) ? 1 : defaultEdgeStyle.opacity)
+          stroke: inPath
+            ? '#64ffda'
+            : treeMode && inMST
+            ? '#64ffda'
+            : inCycle
+            ? '#f59e0b'
+            : defaultEdgeStyle.stroke,
+          strokeWidth: inPath ? 4 : treeMode && inMST ? 3 : inCycle ? 3 : defaultEdgeStyle.strokeWidth,
+          opacity: hidden ? 0 : inPath || treeMode && inMST || inCycle ? 1 : defaultEdgeStyle.opacity
         }
       };
     }));
-  }, [startNode, endNode, isMSTMode, setNodes, setEdges]);
+  }, [startNode, endNode, viewMode, setNodes, setEdges]);
 
   return (
     <section id="network" className="py-24 relative">
@@ -271,17 +420,48 @@ export default function NetworkPreview() {
             <div className="bg-navy/80 p-6 rounded-xl border border-cyan/20">
               <h3 className="font-bold text-lg mb-6 flex items-center gap-2 border-b border-cyan/20 pb-3">
                 <Search className="w-5 h-5 text-cyan" />
-                Pathfinding Simulator
+                View Mode
               </h3>
-              
+
               <div className="space-y-4">
+                <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate/50 p-4 border border-cyan/20">
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-alabaster/60">View Mode</div>
+                    <div className="text-sm font-bold text-alabaster">Network Graph / Optimized Tree</div>
+                  </div>
+                  <div className="inline-flex rounded-full bg-navy border border-cyan/20 p-1">
+                    <button
+                      onClick={() => {
+                        setViewMode('graph');
+                      }}
+                      className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                        viewMode === 'graph' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
+                      }`}
+                    >
+                      Graph
+                    </button>
+                    <button
+                      onClick={() => {
+                        setViewMode('tree');
+                        setStartNode('');
+                        setEndNode('');
+                      }}
+                      className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                        viewMode === 'tree' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
+                      }`}
+                    >
+                      Tree
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs text-alabaster/60 mb-2 uppercase font-bold tracking-wider">Start Node</label>
                   <select 
                     className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
                     value={startNode}
                     onChange={(e) => setStartNode(e.target.value)}
-                    disabled={isMSTMode}
+                    disabled={viewMode === 'tree'}
                   >
                     <option value="">Select Origin...</option>
                     {STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -294,7 +474,7 @@ export default function NetworkPreview() {
                     className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
                     value={endNode}
                     onChange={(e) => setEndNode(e.target.value)}
-                    disabled={isMSTMode}
+                    disabled={viewMode === 'tree'}
                   >
                     <option value="">Select Destination...</option>
                     {STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -302,7 +482,7 @@ export default function NetworkPreview() {
                 </div>
               </div>
 
-              {startNode && endNode && startNode !== endNode && !isMSTMode && (
+              {startNode && endNode && startNode !== endNode && viewMode === 'graph' && (
                 <div className="mt-6 p-4 bg-cyan/10 border border-cyan/30 rounded-lg">
                   <div className="text-xs font-mono text-cyan mb-1">Status:</div>
                   <div className="text-sm">Optimal path resolved using Dijkstra&apos;s algorithm.</div>
@@ -313,28 +493,14 @@ export default function NetworkPreview() {
             <div className="bg-navy/80 p-6 rounded-xl border border-amber-500/20">
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2 border-b border-amber-500/20 pb-3 text-amber-500">
                 <GitMerge className="w-5 h-5" />
-                Tree View
+                {viewMode === 'graph' ? 'Full Network Graph' : 'Optimized Tree'}
               </h3>
               <p className="text-sm text-alabaster/70 mb-6">
-                Transform the full graph into a Minimum Spanning Tree (MST) using Kruskal&apos;s topological sort to determine minimal infrastructural track laying costs.
+                {viewMode === 'graph'
+                  ? 'Display all routes with cycle detection emphasized in the directed track layout.'
+                  : 'Filter the edges to the Minimum Spanning Tree and reveal the critical transport backbone.'
+                }
               </p>
-              
-              <button
-                onClick={() => {
-                  setIsMSTMode(!isMSTMode);
-                  if (!isMSTMode) {
-                    setStartNode('');
-                    setEndNode('');
-                  }
-                }}
-                className={`w-full py-3 px-4 rounded-lg font-bold text-sm hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 ${
-                  isMSTMode 
-                    ? 'bg-amber-500 text-navy shadow-[0_0_15px_rgba(245,158,11,0.4)]' 
-                    : 'bg-transparent border border-amber-500 text-amber-500 hover:bg-amber-500/10'
-                }`}
-              >
-                {isMSTMode ? 'Disable MST View' : 'Generate MST'}
-              </button>
             </div>
           </div>
 

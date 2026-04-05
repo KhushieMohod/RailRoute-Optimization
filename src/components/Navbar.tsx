@@ -11,6 +11,7 @@ export default function Navbar() {
         </Link>
         <div className="hidden md:flex space-x-6 text-sm font-medium text-cyan/80">
           <Link href="#problem" className="hover:text-cyan transition-colors">Analysis</Link>
+          <Link href="#technical-implementation" className="hover:text-cyan transition-colors">Technical Implementation</Link>
           <Link href="#objectives" className="hover:text-cyan transition-colors">Objectives</Link>
           <Link href="#constraints" className="hover:text-cyan transition-colors">Constraints</Link>
         </div>
