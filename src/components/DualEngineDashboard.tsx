@@ -16,7 +16,7 @@ import {
 // @ts-ignore
 import '@xyflow/react/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Database, Plus, RotateCcw, Zap, GitPullRequest, Search, Trash2, Activity } from 'lucide-react';
+import { Network, Database, Plus, RotateCcw, GitPullRequest, Search, Trash2, Activity } from 'lucide-react';
 
 // --- Types & Constants ---
 interface Station { id: string; name: string; x: number; y: number; }
@@ -169,9 +169,10 @@ export default function DualEngineDashboard() {
   const [searchHighlight, setSearchHighlight] = useState<number | null>(null);
 
   // @ts-ignore
-  const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
-  // @ts-ignore
-  const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
+const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
+
+// @ts-ignore
+const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
 
   const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
     setDisabledEdges((prev) => {
