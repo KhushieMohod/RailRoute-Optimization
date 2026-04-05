@@ -100,9 +100,18 @@ function getShortestPath(startId: string, endId: string, disabledEdges: Set<stri
 
 // --- AVL Node & Tree Logic ---
 class AVLNode {
-  id: number; name: string; height = 1;
-  left: AVLNode | null = null; right: AVLNode | null = null;
-  constructor(id: number, name: string) { this.id = id; this.name = name; }
+  id: number; 
+  dest: string; 
+  time: string; 
+  height = 1;
+  left: AVLNode | null = null; 
+  right: AVLNode | null = null;
+
+  constructor(id: number, dest: string, time: string) { 
+    this.id = id; 
+    this.dest = dest; 
+    this.time = time;
+  }
 }
 
 const getH = (n: AVLNode | null) => n ? n.height : 0;
@@ -124,10 +133,10 @@ function rotateL(x: AVLNode): AVLNode {
   return y;
 }
 
-function insert(n: AVLNode | null, id: number, name: string): AVLNode {
-  if (!n) return new AVLNode(id, name);
-  if (id < n.id) n.left = insert(n.left, id, name);
-  else if (id > n.id) n.right = insert(n.right, id, name);
+function insert(n: AVLNode | null, id: number, dest: string, time: string): AVLNode {
+  if (!n) return new AVLNode(id, dest, time);
+  if (id < n.id) n.left = insert(n.left, id, dest, time);
+  else if (id > n.id) n.right = insert(n.right, id, dest, time);
   else return n;
 
   n.height = 1 + Math.max(getH(n.left), getH(n.right));
@@ -146,7 +155,7 @@ function deleteNode(n: AVLNode | null, id: number): AVLNode | null {
   else {
     if (!n.left || !n.right) return n.left || n.right;
     let m = n.right; while (m.left) m = m.left;
-    n.id = m.id; n.name = m.name; n.right = deleteNode(n.right, m.id);
+    n.id = m.id; n.dest = m.dest; n.time = m.time; n.right = deleteNode(n.right, m.id);
   }
   n.height = 1 + Math.max(getH(n.left), getH(n.right));
   const b = getB(n);
@@ -170,9 +179,8 @@ export default function DualEngineDashboard() {
   const [treeInput, setTreeInput] = useState('');
   const [searchHighlight, setSearchHighlight] = useState<number | null>(null);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), [setNodes]);
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), [setEdges]);
 
@@ -220,16 +228,28 @@ export default function DualEngineDashboard() {
         {n.left && <line x1={x} y1={y} x2={x - offset} y2={y + 80} stroke="#233554" strokeWidth="2" />}
         {n.right && <line x1={x} y1={y} x2={x + offset} y2={y + 80} stroke="#233554" strokeWidth="2" />}
         <motion.g animate={{ scale: isH ? 1.2 : 1 }}>
-          <circle cx={x} cy={y} r="25" fill={isH ? '#64ffda' : '#112240'} stroke="#64ffda" strokeWidth="2" />
-          <text x={x} y={y + 5} textAnchor="middle" fill={isH ? '#0a192f' : '#e6f1ff'} fontSize="12" fontWeight="bold">{n.id}</text>
-          <rect x={x + 15} y={y - 30} width="20" height="20" rx="4" fill="#f59e0b" />
-          <text x={x + 25} y={y - 16} textAnchor="middle" fill="#0a192f" fontSize="10" fontWeight="bold">{getB(n)}</text>
+          <circle cx={x} cy={y} r="32" fill={isH ? '#64ffda' : '#112240'} stroke="#64ffda" strokeWidth="2" />
+          <text x={x} y={y - 8} textAnchor="middle" fill={isH ? '#0a192f' : '#e6f1ff'} fontSize="11" fontWeight="bold">#{n.id}</text>
+          <text x={x} y={y + 6} textAnchor="middle" fill={isH ? '#0a192f' : '#64ffda'} fontSize="8" fontWeight="bold">{n.dest}</text>
+          <text x={x} y={y + 18} textAnchor="middle" fill={isH ? '#0a192f' : '#8892b0'} fontSize="7">{n.time}</text>
+          
+          <rect x={x + 22} y={y - 38} width="18" height="18" rx="4" fill="#f59e0b" />
+          <text x={x + 31} y={y - 26} textAnchor="middle" fill="#0a192f" fontSize="9" fontWeight="bold">{getB(n)}</text>
         </motion.g>
         {renderAVL(n.left, x - offset, y + 80, offset / 2)}
         {renderAVL(n.right, x + offset, y + 80, offset / 2)}
       </g>
     );
   };
+
+  const mockData = [
+    { dest: 'Mumbai', time: '10:30 AM' },
+    { dest: 'Pune', time: '12:45 PM' },
+    { dest: 'Delhi', time: '02:15 PM' },
+    { dest: 'Bangalore', time: '04:00 PM' },
+    { dest: 'Chennai', time: '06:30 PM' },
+    { dest: 'Kolkata', time: '09:00 PM' },
+  ];
 
   return (
     <section id="implementation" className="py-24 bg-[#0a192f] min-h-screen text-[#64ffda]">
@@ -257,23 +277,35 @@ export default function DualEngineDashboard() {
             ) : (
               <motion.div key="t" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[600px] flex flex-col">
                 <div className="flex justify-between items-start mb-8">
-                  <div><h3 className="text-xl font-bold text-white flex items-center gap-2"><GitPullRequest className="text-[#64ffda]" /> Time-Table Management</h3><p className="text-xs text-[#8892b0]">Deterministic lookup for dynamic rail schedules.</p></div>
+                  <div><h3 className="text-xl font-bold text-white flex items-center gap-2"><GitPullRequest className="text-[#64ffda]" /> Time-Table Management</h3><p className="text-xs text-[#8892b0]">Database orchestration using AVL self-balancing logic.</p></div>
                   <div className="flex gap-2">
-                    <input placeholder="ID..." className="bg-[#0a192f] border border-[#64ffda] rounded-lg px-3 py-1 text-white text-sm w-20 outline-none" value={treeInput} onChange={e => setTreeInput(e.target.value)} />
-                    <button onClick={() => { const id = parseInt(treeInput); if (!isNaN(id)) { setRoot(prev => insert(prev, id, 'Train ' + id)); setTreeInput(''); } }} className="bg-[#64ffda] text-[#0a192f] px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Plus size={14} /> Add</button>
-                    <button onClick={() => { const id = parseInt(treeInput); if (!isNaN(id)) { setRoot(prev => deleteNode(prev, id)); setTreeInput(''); } }} className="bg-red-500 text-white px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Trash2 size={14} /> Del</button>
+                    <input placeholder="Train ID..." className="bg-[#0a192f] border border-[#64ffda] rounded-lg px-3 py-1 text-white text-sm w-24 outline-none" value={treeInput} onChange={e => setTreeInput(e.target.value)} />
+                    <button 
+                      onClick={() => { 
+                        const id = parseInt(treeInput); 
+                        if (!isNaN(id)) { 
+                          const data = mockData[Math.floor(Math.random() * mockData.length)];
+                          setRoot(prev => insert(prev, id, data.dest, data.time)); 
+                          setTreeInput(''); 
+                        } 
+                      }} 
+                      className="bg-[#64ffda] text-[#0a192f] px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"
+                    >
+                      <Plus size={14} /> Add Train
+                    </button>
+                    <button onClick={() => { const id = parseInt(treeInput); if (!isNaN(id)) { setRoot(prev => deleteNode(prev, id)); setTreeInput(''); } }} className="bg-red-500 text-white px-4 py-1 rounded-lg text-xs font-bold flex items-center gap-1"><Trash2 size={14} /> Remove</button>
                   </div>
                 </div>
                 <div className="flex-1 bg-[#0a192f]/50 rounded-2xl relative overflow-hidden border border-[#64ffda]/5">
                   <div className="absolute top-4 left-4 flex gap-4"><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">HEIGHT</span><span className="text-lg font-bold text-white">{stats.h}</span></div><div className="bg-[#1d2d50] p-2 rounded-lg border border-[#64ffda]/20 text-center"><span className="text-[8px] text-[#64ffda] block">NODES</span><span className="text-lg font-bold text-white">{stats.c}</span></div></div>
-                  <svg width="100%" height="100%" viewBox="0 0 800 500" className="mx-auto mt-10" onClick={() => setSearchHighlight(null)}>{renderAVL(root, 400, 50, 180)}</svg>
-                  <Panel position="bottom-right" className="bg-[#0a192f]/90 p-3 rounded-lg border border-[#64ffda]/20 max-w-xs"><div className="flex items-center gap-1 text-[#64ffda] text-[10px] font-mono mb-1"><Activity size={12} /> Analysis</div><p className="text-[9px] text-[#8892b0]">AVL balancing ensures O(log n) efficiency.</p></Panel>
+                  <svg width="100%" height="100%" viewBox="0 0 800 500" className="mx-auto mt-10" onClick={() => setSearchHighlight(null)}>{renderAVL(root, 400, 60, 180)}</svg>
+                  <Panel position="bottom-right" className="bg-[#0a192f]/90 p-3 rounded-lg border border-[#64ffda]/20 max-w-xs"><div className="flex items-center gap-1 text-[#64ffda] text-[10px] font-mono mb-1"><Activity size={12} /> Database Analysis</div><p className="text-[9px] text-[#8892b0]">Each node stores a Train ID as the primary key and its schedule as the record value.</p></Panel>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-        <div className="mt-8 flex justify-center gap-8 text-[10px] font-mono text-[#64ffda]/40 uppercase tracking-widest"><div className="flex items-center gap-1"><span className="w-2 h-2 border border-[#64ffda]" /> Infrastructure</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-[#64ffda]" /> Optimal Path</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500" /> Rotation State</div></div>
+        <div className="mt-8 flex justify-center gap-8 text-[10px] font-mono text-[#64ffda]/40 uppercase tracking-widest"><div className="flex items-center gap-1"><span className="w-2 h-2 border border-[#64ffda]" /> Database Records</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-[#64ffda]" /> Key Search</div><div className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-500" /> Balance Factor</div></div>
       </div>
     </section>
   );
