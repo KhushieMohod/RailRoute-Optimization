@@ -53,6 +53,63 @@ const TRACKS = [
   { id: 'e1-6', source: '1', target: '6', weight: 30 }
 ];
 
+const AVL_TREE_NODES = [
+  {
+    id: '1',
+    position: { x: 360, y: 100 },
+    data: {
+      label: <div className="text-center"><strong>Central Hub</strong><br />h=3</div>,
+      tooltip: 'Parent: Root / Children: North Terminal, East District'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '2',
+    position: { x: 220, y: 220 },
+    data: {
+      label: <div className="text-center"><strong>North Terminal</strong><br />h=2</div>,
+      tooltip: 'Parent: Central Hub / Children: Port Side'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '3',
+    position: { x: 120, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>Port Side</strong><br />h=1</div>,
+      tooltip: 'Parent: North Terminal / Children: None'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '4',
+    position: { x: 500, y: 220 },
+    data: {
+      label: <div className="text-center"><strong>East District</strong><br />h=2</div>,
+      tooltip: 'Parent: Central Hub / Children: West Valley, South Depot'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '5',
+    position: { x: 420, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>West Valley</strong><br />h=1</div>,
+      tooltip: 'Parent: East District / Children: None'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '6',
+    position: { x: 580, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>South Depot</strong><br />h=1</div>,
+      tooltip: 'Parent: East District / Children: None'
+    },
+    style: defaultNodeStyle
+  }
+];
+
 const defaultNodeStyle = {
   background: '#112240',
   color: '#e6f1ff',
@@ -64,6 +121,71 @@ const defaultNodeStyle = {
   fontWeight: 'bold',
   boxShadow: '0 0 10px rgba(100,255,218,0.1)'
 };
+
+const AVL_TREE_NODES = [
+  {
+    id: '1',
+    position: { x: 360, y: 100 },
+    data: {
+      label: <div className="text-center"><strong>Central Hub</strong><br />h=3</div>,
+      tooltip: 'Parent: Root / Children: North Terminal, East District'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '2',
+    position: { x: 220, y: 220 },
+    data: {
+      label: <div className="text-center"><strong>North Terminal</strong><br />h=2</div>,
+      tooltip: 'Parent: Central Hub / Children: Port Side'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '3',
+    position: { x: 120, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>Port Side</strong><br />h=1</div>,
+      tooltip: 'Parent: North Terminal / Children: None'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '4',
+    position: { x: 500, y: 220 },
+    data: {
+      label: <div className="text-center"><strong>East District</strong><br />h=2</div>,
+      tooltip: 'Parent: Central Hub / Children: West Valley, South Depot'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '5',
+    position: { x: 420, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>West Valley</strong><br />h=1</div>,
+      tooltip: 'Parent: East District / Children: None'
+    },
+    style: defaultNodeStyle
+  },
+  {
+    id: '6',
+    position: { x: 580, y: 340 },
+    data: {
+      label: <div className="text-center"><strong>South Depot</strong><br />h=1</div>,
+      tooltip: 'Parent: East District / Children: None'
+    },
+    style: defaultNodeStyle
+  }
+];
+
+const AVL_TREE_EDGES = [
+  { id: 'avl1', source: '1', target: '2' },
+  { id: 'avl2', source: '2', target: '3' },
+  { id: 'avl3', source: '1', target: '4' },
+  { id: 'avl4', source: '4', target: '5' },
+  { id: 'avl5', source: '4', target: '6' }
+];
 
 const defaultEdgeStyle = {
   stroke: '#e6f1ff',
@@ -172,46 +294,6 @@ function getNodeDegrees() {
   return { indegree, outdegree };
 }
 
-function getMSTHierarchy() {
-  const mstEdges = getMSTEdgeIds();
-  const adjacency: Record<string, string[]> = {};
-  STATIONS.forEach(s => adjacency[s.id] = []);
-  mstEdges.forEach(edgeId => {
-    const edge = TRACKS.find(t => t.id === edgeId);
-    if (edge) {
-      adjacency[edge.source].push(edge.target);
-      adjacency[edge.target].push(edge.source);
-    }
-  });
-
-  const parent: Record<string, string | null> = {};
-  const children: Record<string, string[]> = {};
-  STATIONS.forEach(s => {
-    parent[s.id] = null;
-    children[s.id] = [];
-  });
-
-  const root = STATIONS[0].id;
-  const visited: Record<string, boolean> = {};
-  STATIONS.forEach(s => visited[s.id] = false);
-  const queue = [root];
-  visited[root] = true;
-
-  while (queue.length > 0) {
-    const node = queue.shift()!;
-    for (const neighbor of adjacency[node]) {
-      if (!visited[neighbor]) {
-        visited[neighbor] = true;
-        parent[neighbor] = node;
-        children[node].push(neighbor);
-        queue.push(neighbor);
-      }
-    }
-  }
-
-  return { parent, children };
-}
-
 function getCycleEdgeIds() {
   const adj: Record<string, string[]> = {};
   STATIONS.forEach(s => adj[s.id] = []);
@@ -274,10 +356,9 @@ export default function NetworkPreview() {
   
   const [startNode, setStartNode] = useState<string>('');
   const [endNode, setEndNode] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'graph' | 'tree'>('graph');
+  const [viewMode, setViewMode] = useState<'graph' | 'avl'>('graph');
 
   const graphDegrees = getNodeDegrees();
-  const mstHierarchy = getMSTHierarchy();
 
   // Initialize graph
   useEffect(() => {
@@ -312,16 +393,42 @@ export default function NetworkPreview() {
 
   // Handle Updates
   useEffect(() => {
+    const graphMode = viewMode === 'graph';
+    const avlMode = viewMode === 'avl';
+    const cycleEdges = graphMode ? getCycleEdgeIds() : [];
+
+    if (avlMode) {
+      setNodes(AVL_TREE_NODES.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          label: (
+            <div title={node.data.tooltip}>
+              {node.data.label}
+            </div>
+          )
+        }
+      })));
+
+      setEdges(AVL_TREE_EDGES.map(edge => ({
+        ...edge,
+        label: undefined,
+        animated: false,
+        style: {
+          ...defaultEdgeStyle,
+          stroke: '#64ffda',
+          strokeWidth: 3,
+          opacity: 1
+        }
+      })));
+
+      return;
+    }
+
     let pathEdges: string[] = [];
     let pathNodes: string[] = [];
-    let mstEdges: string[] = [];
-    const cycleEdges = viewMode === 'graph' ? getCycleEdgeIds() : [];
-    const graphMode = viewMode === 'graph';
-    const treeMode = viewMode === 'tree';
 
-    if (treeMode) {
-      mstEdges = getMSTEdgeIds();
-    } else if (startNode && endNode && startNode !== endNode) {
+    if (startNode && endNode && startNode !== endNode) {
       const result = getShortestPath(startNode, endNode);
       pathEdges = result.edges;
       pathNodes = result.nodes;
@@ -329,15 +436,7 @@ export default function NetworkPreview() {
 
     setNodes((nds: FlowNode[]) => nds.map((n: FlowNode) => {
       const inPath = pathNodes.includes(n.id);
-      const tooltip = graphMode
-        ? `In-Degree: ${graphDegrees.indegree[n.id]} / Out-Degree: ${graphDegrees.outdegree[n.id]}`
-        : (() => {
-            const parent = mstHierarchy.parent[n.id];
-            const children = mstHierarchy.children[n.id] || [];
-            const parentLabel = parent ? STATIONS.find(s => s.id === parent)?.name : 'Root';
-            const childNames = children.length > 0 ? children.map(id => STATIONS.find(s => s.id === id)?.name).filter(Boolean).join(', ') : 'None';
-            return `Parent: ${parentLabel} / Children: ${childNames}`;
-          })();
+      const tooltip = `In-Degree: ${graphDegrees.indegree[n.id]} / Out-Degree: ${graphDegrees.outdegree[n.id]}`;
 
       return {
         ...n,
@@ -361,27 +460,17 @@ export default function NetworkPreview() {
 
     setEdges((eds: FlowEdge[]) => eds.map((e: FlowEdge) => {
       const inPath = pathEdges.includes(e.id);
-      const inMST = mstEdges.includes(e.id);
       const inCycle = cycleEdges.includes(e.id);
       
-      let hidden = false;
-      if (treeMode && !inMST) hidden = true;
-
       return {
         ...e,
-        hidden,
+        hidden: false,
         animated: inPath,
         style: {
           ...defaultEdgeStyle,
-          stroke: inPath
-            ? '#64ffda'
-            : treeMode && inMST
-            ? '#64ffda'
-            : inCycle
-            ? '#f59e0b'
-            : defaultEdgeStyle.stroke,
-          strokeWidth: inPath ? 4 : treeMode && inMST ? 3 : inCycle ? 3 : defaultEdgeStyle.strokeWidth,
-          opacity: hidden ? 0 : inPath || treeMode && inMST || inCycle ? 1 : defaultEdgeStyle.opacity
+          stroke: inPath ? '#64ffda' : inCycle ? '#f59e0b' : defaultEdgeStyle.stroke,
+          strokeWidth: inPath ? 4 : inCycle ? 3 : defaultEdgeStyle.strokeWidth,
+          opacity: inPath || inCycle ? 1 : defaultEdgeStyle.opacity
         }
       };
     }));
@@ -395,7 +484,7 @@ export default function NetworkPreview() {
             <Route className="w-8 h-8 text-cyan" />
             Live Network Preview
           </h2>
-          <p className="text-cyan/80 text-lg">Interactive React Flow topological viewer featuring dynamic pathfinding and spanning tree resolution.</p>
+          <p className="text-cyan/80 text-lg">Interactive React Flow topological viewer featuring dynamic pathfinding and AVL tree visualization.</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 bg-slate/20 p-6 rounded-2xl border border-cyan/10 backdrop-blur-sm">
@@ -427,7 +516,7 @@ export default function NetworkPreview() {
                 <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate/50 p-4 border border-cyan/20">
                   <div>
                     <div className="text-xs uppercase tracking-wider text-alabaster/60">View Mode</div>
-                    <div className="text-sm font-bold text-alabaster">Network Graph / Optimized Tree</div>
+                    <div className="text-sm font-bold text-alabaster">Network Graph / AVL Tree</div>
                   </div>
                   <div className="inline-flex rounded-full bg-navy border border-cyan/20 p-1">
                     <button
@@ -442,15 +531,15 @@ export default function NetworkPreview() {
                     </button>
                     <button
                       onClick={() => {
-                        setViewMode('tree');
+                        setViewMode('avl');
                         setStartNode('');
                         setEndNode('');
                       }}
                       className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                        viewMode === 'tree' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
+                        viewMode === 'avl' ? 'bg-cyan text-navy' : 'text-alabaster/70 hover:text-alabaster'
                       }`}
                     >
-                      Tree
+                      AVL Tree
                     </button>
                   </div>
                 </div>
@@ -461,7 +550,7 @@ export default function NetworkPreview() {
                     className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
                     value={startNode}
                     onChange={(e) => setStartNode(e.target.value)}
-                    disabled={viewMode === 'tree'}
+                    disabled={viewMode === 'avl'}
                   >
                     <option value="">Select Origin...</option>
                     {STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -474,7 +563,7 @@ export default function NetworkPreview() {
                     className="w-full bg-slate border border-cyan/30 rounded-lg px-3 py-2 text-sm text-alabaster focus:outline-none focus:border-cyan transition-colors"
                     value={endNode}
                     onChange={(e) => setEndNode(e.target.value)}
-                    disabled={viewMode === 'tree'}
+                    disabled={viewMode === 'avl'}
                   >
                     <option value="">Select Destination...</option>
                     {STATIONS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -493,12 +582,12 @@ export default function NetworkPreview() {
             <div className="bg-navy/80 p-6 rounded-xl border border-amber-500/20">
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2 border-b border-amber-500/20 pb-3 text-amber-500">
                 <GitMerge className="w-5 h-5" />
-                {viewMode === 'graph' ? 'Full Network Graph' : 'Optimized Tree'}
+                {viewMode === 'graph' ? 'Full Network Graph' : 'AVL Tree View'}
               </h3>
               <p className="text-sm text-alabaster/70 mb-6">
                 {viewMode === 'graph'
                   ? 'Display all routes with cycle detection emphasized in the directed track layout.'
-                  : 'Filter the edges to the Minimum Spanning Tree and reveal the critical transport backbone.'
+                  : 'Visualize the AVL balancing structure for rapid $O(\log n)$ station timetable lookup.'
                 }
               </p>
             </div>

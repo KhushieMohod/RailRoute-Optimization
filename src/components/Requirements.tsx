@@ -200,6 +200,19 @@ export default function Requirements() {
                   </div>
                 </div>
 
+                <div className="bg-slate/30 border border-cyan/20 rounded-2xl p-8 backdrop-blur-sm">
+                  <h3 className="text-xl font-bold text-alabaster border-b border-cyan/20 pb-4 mb-6 flex items-center gap-3">
+                    <DatabaseZap className="w-6 h-6 text-cyan" />
+                    AVL Tree Management Logic
+                  </h3>
+                  <p className="text-sm text-alabaster/70 leading-relaxed">
+                    We use an AVL Tree for the backend database because it guarantees <span className="font-mono">O(\log n)</span> search time. If we have thousands of stations, a simple list is too slow. The AVL tree&apos;s self-balancing rotations ensure that even as the network grows, looking up a station&apos;s timetable remains lightning-fast.
+                  </p>
+                  <p className="text-sm text-alabaster/70 leading-relaxed mt-4">
+                    This logic is surfaced visually in the Network Preview as a separate AVL Tree tab, demonstrating how balanced binary structures support high-performance schedule retrieval.
+                  </p>
+                </div>
+
                 {/* Edge Case Matrix */}
                 <div>
                   <h3 className="text-xl font-bold text-alabaster mb-6 border-l-4 border-amber-500 pl-4 py-1">Edge Case Audit Matrix</h3>
