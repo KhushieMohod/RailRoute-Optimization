@@ -53,63 +53,6 @@ const TRACKS = [
   { id: 'e1-6', source: '1', target: '6', weight: 30 }
 ];
 
-const AVL_TREE_NODES = [
-  {
-    id: '1',
-    position: { x: 360, y: 100 },
-    data: {
-      label: <div className="text-center"><strong>Central Hub</strong><br />h=3</div>,
-      tooltip: 'Parent: Root / Children: North Terminal, East District'
-    },
-    style: defaultNodeStyle
-  },
-  {
-    id: '2',
-    position: { x: 220, y: 220 },
-    data: {
-      label: <div className="text-center"><strong>North Terminal</strong><br />h=2</div>,
-      tooltip: 'Parent: Central Hub / Children: Port Side'
-    },
-    style: defaultNodeStyle
-  },
-  {
-    id: '3',
-    position: { x: 120, y: 340 },
-    data: {
-      label: <div className="text-center"><strong>Port Side</strong><br />h=1</div>,
-      tooltip: 'Parent: North Terminal / Children: None'
-    },
-    style: defaultNodeStyle
-  },
-  {
-    id: '4',
-    position: { x: 500, y: 220 },
-    data: {
-      label: <div className="text-center"><strong>East District</strong><br />h=2</div>,
-      tooltip: 'Parent: Central Hub / Children: West Valley, South Depot'
-    },
-    style: defaultNodeStyle
-  },
-  {
-    id: '5',
-    position: { x: 420, y: 340 },
-    data: {
-      label: <div className="text-center"><strong>West Valley</strong><br />h=1</div>,
-      tooltip: 'Parent: East District / Children: None'
-    },
-    style: defaultNodeStyle
-  },
-  {
-    id: '6',
-    position: { x: 580, y: 340 },
-    data: {
-      label: <div className="text-center"><strong>South Depot</strong><br />h=1</div>,
-      tooltip: 'Parent: East District / Children: None'
-    },
-    style: defaultNodeStyle
-  }
-];
-
 const defaultNodeStyle = {
   background: '#112240',
   color: '#e6f1ff',
