@@ -1,0 +1,12 @@
+1. Start
+2. Input edges
+3. Sort edges in ascending order of weight
+4. Initialize parent[] for all vertices
+5. Repeat until MST has nV - 1 edges:
+  Pick smallest edge
+  Find parents of both vertices
+  If parents are different:
+    Include edge in MST
+    Union the sets
+6. Print MST cost
+7. Stop

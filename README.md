@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚆 RailRouteOptimization
 
-## Getting Started
+## 📌 Overview
+**RailRouteOptimization** is a C++ project that implements **Prim’s Minimum Spanning Tree (MST) Algorithm** to design an optimal railway network.
 
-First, run the development server:
+This project simulates how railway stations can be connected with minimum total cost while ensuring all stations remain connected.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Objectives
+- Implement **Prim’s Algorithm**
+- Understand **Greedy Approach**
+- Work with **Graph Representation (Adjacency Matrix)**
+- Apply DSA concepts to real-world problems
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+| Category        | Technology |
+|----------------|-----------|
+| Language       | C++       |
+| Concepts       | Graphs, MST, Greedy Algorithms |
+| Representation | Adjacency Matrix |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📂 Project Structure
+RailRouteOptimization/
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+│
 
-## Deploy on Vercel
+├── main.cpp # Prim's Algorithm Implementation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+├── README.md # Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+└── flowchart.mmd # Mermaid Flowchart
+
+---
+
+## ⚙️ How It Works
+1. User inputs number of stations  
+2. User enters cost matrix  
+3. Program applies Prim’s Algorithm  
+4. Minimum edges are selected  
+5. Final MST and total cost are displayed  
+
+---
+
+## 🧠 Algorithm (Prim’s MST)
+Initialize arrays:
+visited[] = false
+distance[] = INF
+from[] = -1
+Set starting node:
+distance[0] = 0
+Repeat for all vertices:
+Select unvisited node with minimum distance
+Mark it as visited
+Update distances of adjacent nodes
+Construct MST using from[]
+
+
+---
+
+## 📊 Sample Input
+
+Enter number of stations: 4
+
+Enter cost matrix:
+
+0 10 15 20
+
+10 0 35 25
+
+15 35 0 30
+
+20 25 30 0
+
+---
+
+## ✅ Sample Output
+
+Edge Cost
+
+0 - 1 10
+
+0 - 2 15
+
+1 - 3 25
+
+Total Minimum Cost = 50
