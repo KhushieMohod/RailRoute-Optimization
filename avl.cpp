@@ -1,5 +1,6 @@
 #include<iostream>
 #include<string>
+#include<algorithm>
 using namespace std;
 
 struct Node{
@@ -16,92 +17,126 @@ struct Node{
         destination = dest;
         arrivalTime = time;
         left = right = nullptr;
-        left = right = nullptr;
         height = 1;
     }
 };
 
-Node* insert(Node* root, int id, string dest, string time)
-{
-    if(!root) return new Node(id, dest, time);
-
-    if(id < root -> trainID) root -> left = insert(root -> left, id, dest, time);
-    else if(id > root -> trainID) root -> right = insert(root -> right, id, dest, time);
-    else return root;
-
-    
-}
-
+// Get height
 int height(Node* root)
 {
     if(!root) return 0;
-    return root -> height;
+    return root->height;
 }
 
+// Get balance factor
 int balanceFactor(Node* root)
 {
     if(!root) return 0;
-    return height(root -> left) - height(root -> right);
+    return height(root->left) - height(root->right);
 }
 
+// Right Rotation
 Node* rotateRight(Node* parent)
 {
-    Node* temp = parent -> left;
-    if(temp -> right) temp -> right = parent -> left;
-    temp -> right = parent;
+    Node* temp = parent->left;
+    Node* T2 = temp->right;
+
+    temp->right = parent;
+    parent->left = T2;
+
+    // Update heights
+    parent->height = 1 + max(height(parent->left), height(parent->right));
+    temp->height = 1 + max(height(temp->left), height(temp->right));
+
     return temp;
 }
 
+// Left Rotation
 Node* rotateLeft(Node* parent)
 {
-    Node* temp = parent -> right;
-    if(temp -> left) parent -> right = temp -> left;
-    temp -> left = parent;
-    return temp; 
+    Node* temp = parent->right;
+    Node* T2 = temp->left;
+
+    temp->left = parent;
+    parent->right = T2;
+
+    // Update heights
+    parent->height = 1 + max(height(parent->left), height(parent->right));
+    temp->height = 1 + max(height(temp->left), height(temp->right));
+
+    return temp;
 }
 
-Node* leftLeft(Node* parent)
+// AVL Insert
+Node* insert(Node* root, int id, string dest, string time)
 {
-    Node* temp = rotateRight(parent);
-    return temp;
+    // Step 1: Normal BST insertion
+    if(!root) return new Node(id, dest, time);
+
+    if(id < root->trainID)
+        root->left = insert(root->left, id, dest, time);
+    else if(id > root->trainID)
+        root->right = insert(root->right, id, dest, time);
+    else
+        return root;
+
+    // Step 2: Update height
+    root->height = 1 + max(height(root->left), height(root->right));
+
+    // Step 3: Get balance factor
+    int bf = balanceFactor(root);
+
+    // Step 4: Balance the tree
+
+    // Left Left Case
+    if(bf > 1 && id < root->left->trainID)
+        return rotateRight(root);
+
+    // Right Right Case
+    if(bf < -1 && id > root->right->trainID)
+        return rotateLeft(root);
+
+    // Left Right Case
+    if(bf > 1 && id > root->left->trainID)
+    {
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
+    }
+
+    // Right Left Case
+    if(bf < -1 && id < root->right->trainID)
+    {
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
 }
 
-Node* rightRight(Node* parent)
+// Inorder traversal (for checking)
+void inorder(Node* root)
 {
-    Node* temp = rotateLeft(parent);
-    return temp;
-}
-
-Node* leftRight(Node* parent)
-{   
-    //Resolving the left right case to left left case
-    Node* temp = rotateLeft(parent -> left);
-    parent -> left = temp;
-    //Resolving the left left case
-    temp = rotateRight(parent);
-    return temp;
-}
-
-Node* rightLeft(Node* parent)
-{   
-    //Resolving the right left case to right right case
-    Node* temp = rotateRight(parent ->right);
-    parent -> right = temp;
-    //Resolving the right right case
-    temp = rotateLeft(parent);
-    return temp;
+    if(!root) return;
+    inorder(root->left);
+    cout << root->trainID << " (" << root->destination << ") ";
+    inorder(root->right);
 }
 
 int main()
 {
     Node* root = nullptr;
+
     root = insert(root, 30, "CSMT", "5.00 PM");
-    root = insert(root, 40, "Karjat", "10.30 pM");
+    root = insert(root, 40, "Karjat", "10.30 PM");
     root = insert(root, 50, "Lonavala", "9.00 AM");
     root = insert(root, 45, "Daund", "10.00 AM");
     root = insert(root, 85, "Dadar", "7.45 AM");
     root = insert(root, 90, "Kalyan", "1.15 PM");
     root = insert(root, 70, "Nashik", "8.00 PM");
     root = insert(root, 65, "Sinnar", "12.30 PM");
+
+    cout << "Inorder Traversal:\n";
+    inorder(root);
+
     return 0;
 }
