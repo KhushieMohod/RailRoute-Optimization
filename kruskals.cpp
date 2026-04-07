@@ -15,7 +15,7 @@ private:
 
 public:
     void input() {
-        cout<<"Enter vertices and edges: ";
+        cout<<"Enter number of vertices and edges: ";
         cin>>nV>>nE;
 
         cout<<"Enter u v weight:\n";
