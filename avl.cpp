@@ -63,7 +63,7 @@ Node* rotateLeft(Node* parent)
     // Update heights
     parent->height = 1 + max(height(parent->left), height(parent->right));
     temp->height = 1 + max(height(temp->left), height(temp->right));
-
+    
     return temp;
 }
 

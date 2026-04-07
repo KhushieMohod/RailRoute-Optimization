@@ -55,8 +55,8 @@ const TRACKS = [
 
 const defaultNodeStyle = {
   background: '#112240',
-  color: '#e6f1ff',
-  border: '1px solid #64ffda',
+  color: '#f3f2f2',
+  border: '1px solid #dd2493',
   borderRadius: '8px',
   padding: '10px 15px',
   fontSize: '14px',

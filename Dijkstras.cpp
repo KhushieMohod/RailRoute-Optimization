@@ -60,7 +60,7 @@ public:
                 }
             }
 
-            // Debug print (good for viva)
+            // Debug print
             cout<<"Visited: ";
             for(int k=0;k<nV;k++) cout<<visited[k]<<" ";
             cout<<endl;
