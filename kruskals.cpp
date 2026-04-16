@@ -2,64 +2,68 @@
 #include<algorithm>
 using namespace std;
 
-#define MAX 10
+#define MAX_STATIONS 10
 
-struct Edge {
-    int u,v,w;
+// Structure representing a railway track
+struct Track {
+    int station1, station2, cost;
 };
 
-class Graph {
+class RailNetwork {
 private:
-    Edge edges[50];
-    int nV,nE;
+    Track tracks[50];
+    int totalStations, totalTracks;
 
 public:
     void input() {
-        cout<<"Enter number of vertices and edges: ";
-        cin>>nV>>nE;
+        cout << "Enter number of stations and tracks: ";
+        cin >> totalStations >> totalTracks;
 
-        cout<<"Enter u v weight:\n";
-        for(int i=0;i<nE;i++)
-            cin>>edges[i].u>>edges[i].v>>edges[i].w;
+        cout << "Enter station1 station2 cost:\n";
+        for(int i = 0; i < totalTracks; i++) {
+            cin >> tracks[i].station1 >> tracks[i].station2 >> tracks[i].cost;
+        }
     }
 
-    int findParent(int parent[], int i) {
-        if(parent[i]==i) return i;
-        return findParent(parent,parent[i]);
+    int findParent(int parent[], int station) {
+        if(parent[station] == station)
+            return station;
+        return findParent(parent, parent[station]);
     }
 
-    void kruskal() {
-        sort(edges, edges+nE, [](Edge a, Edge b){
-            return a.w < b.w;
+    void designMinimumCostNetwork() {
+        sort(tracks, tracks + totalTracks, [](Track a, Track b) {
+            return a.cost < b.cost;
         });
 
-        int parent[MAX];
-        for(int i=0;i<nV;i++) parent[i]=i;
+        int parent[MAX_STATIONS];
+        for(int i = 0; i < totalStations; i++)
+            parent[i] = i;
 
-        int count=0, i=0, total=0;
+        int edgesUsed = 0, i = 0, totalCost = 0;
 
-        cout<<"Edges in MST:\n";
+        cout << "\nSelected Tracks (MST):\n";
 
-        while(count<nV-1 && i<nE) {
-            Edge e = edges[i++];
+        while(edgesUsed < totalStations - 1 && i < totalTracks) {
+            Track t = tracks[i++];
 
-            int p1 = findParent(parent,e.u);
-            int p2 = findParent(parent,e.v);
+            int p1 = findParent(parent, t.station1);
+            int p2 = findParent(parent, t.station2);
 
-            if(p1!=p2) {
-                cout<<e.u<<" - "<<e.v<<" = "<<e.w<<endl;
-                total += e.w;
+            if(p1 != p2) {
+                cout << t.station1 << " - " << t.station2 << " : " << t.cost << endl;
+                totalCost += t.cost;
                 parent[p1] = p2;
-                count++;
+                edgesUsed++;
             }
         }
 
-        cout<<"Total MST Cost = "<<total<<endl;
+        cout << "Total Network Cost = " << totalCost << endl;
     }
 };
 
 int main() {
-    Graph g;
-    g.input();
-    g.kruskal();
+    RailNetwork r;
+    r.input();
+    r.designMinimumCostNetwork();
 }
